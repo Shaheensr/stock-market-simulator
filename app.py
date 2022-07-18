@@ -11,6 +11,8 @@ from flask_login import (
 import os
 import json
 
+from sqlalchemy import true
+
 app = flask.Flask(__name__)
 
 uri = os.getenv("DATABASE_URL")
@@ -50,7 +52,7 @@ def login():
 def login_post():
     #Add login logic here '''
 
-@app.route("register")
+@app.route("/register")
 def register():
     flask.render_template("register.html")
 
@@ -64,4 +66,4 @@ def logout():
     logout_user()
     return flask.redirect(flask.url_for("index"))
 
-app.run()
+app.run(debug=true)
