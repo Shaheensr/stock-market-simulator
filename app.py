@@ -10,6 +10,7 @@ from flask_login import (
 )
 import os
 import json
+import rsa
 
 from sqlalchemy import true
 
@@ -32,6 +33,7 @@ db = SQLAlchemy(app)
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(512), nullable=False)
 
 
 db.create_all()
@@ -56,9 +58,25 @@ def login_post():
 def register():
     return flask.render_template("register.html")
 
-''' @app.route("/register", methods = ['POST'])
+@app.route("/register", methods = ['POST'])
 def register_post():
-    Add registration code here '''
+    checkQuery = (
+        db.session.query(User)
+        .filter_by(username=flask.request.form.get("username"))
+        .count()
+    )
+
+    if checkQuery > 0:
+        flask.flash("Username is already taken.")
+        return flask.redirect(flask.url_for("register"))
+
+    password = flask.request.form.get("password")
+    encryptedPassword = rsa.encrypt(password.encode(), os.getenv("PUBLIC_KEY"))
+    user = User(username=flask.request.form.get("username"), password=encryptedPassword)
+    db.session.add(user)
+    db.session.commit()
+
+    return flask.redirect(flask.url_for("login"))
 
 @app.route("/logout")
 @login_required
