@@ -54,7 +54,7 @@ def login_post():
 
 @app.route("/register")
 def register():
-    flask.render_template("register.html")
+    return flask.render_template("register.html")
 
 ''' @app.route("/register", methods = ['POST'])
 def register_post():
