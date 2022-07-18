@@ -11,6 +11,7 @@ from flask_login import (
 import os
 import json
 import rsa
+import base64
 
 from sqlalchemy import true
 
@@ -50,9 +51,21 @@ def home():
 def login():
     return flask.render_template("login.html")
 
-''' @app.route("/login", methods = ['POST'])
+@app.route("/login", methods = ['POST'])
 def login_post():
-    #Add login logic here '''
+    username = flask.request.form.get("username")
+    inputPassword = flask.request.form.get("password")
+    encryptedPassword = rsa.encrypt(inputPassword.encode(), os.getenv("PUBLIC_KEY"))
+    user = db.session.query(User).filter_by(username=username, password=encryptedPassword).first()
+
+    if user is None:
+        flask.flash("Incorrect Username or Password.")
+        flask.redirect(flask.url_for("login"))
+    else:
+        login_user(user)
+        next = flask.request.args.get("next")
+
+        return flask.redirect(next or flask.url_for("home"))
 
 @app.route("/register")
 def register():
